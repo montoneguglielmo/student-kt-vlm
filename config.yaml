@@ -1,0 +1,36 @@
+# Shared
+model_id: HuggingFaceTB/SmolVLM-256M-Instruct
+dataset: data
+screenshots_dir: ../MIAAM/data/screenshots/compressed
+
+# Which model to train: "probe" or "lora"
+model_type: lora
+
+batch_size: 1
+epochs: 1
+max_steps: 10
+
+# Dataset windowing
+min_history: 3
+max_history: 8
+history_window: 1
+
+# Learning rate depends on what's trainable.
+# head-only -> higher LR; LoRA -> lower.
+lr:
+  probe: 1.0e-3
+  lora: 2.0e-4
+
+# LoRA hyperparameters
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
