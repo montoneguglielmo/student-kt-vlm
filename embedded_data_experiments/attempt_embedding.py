@@ -54,7 +54,7 @@ def make_interaction_collate_fn(processor):
             processor.apply_chat_template(m, add_generation_prompt=False)
             for m in messages
         ]
-        inputs = processor(text=prompts, return_tensors="pt", padding=True)
+        inputs = processor(text=prompts, return_tensors="pt", padding=True, truncation=True, max_length=1024)
         inputs["_interaction_ids"] = [b["interaction_id"] for b in batch]
         return inputs
 
