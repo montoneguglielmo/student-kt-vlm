@@ -1,0 +1,11 @@
+--extra-index-url https://download.pytorch.org/whl/cu130
+
+torch==2.12.1+cu130
+accelerate==1.14.0
+numpy==2.4.6
+peft==0.19.1
+Pillow==12.2.0
+polars==1.41.2
+PyYAML==6.0.3
+tqdm==4.68.2
+transformers==5.12.1
