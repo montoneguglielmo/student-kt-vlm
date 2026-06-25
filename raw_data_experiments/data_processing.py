@@ -1,22 +1,11 @@
 """
 Knowledge-tracing dataset for a (small) VLM.
 
-One training example:
-    input  = textual history of student attempts 0..t-1
-             + description + screenshot of the target exercise t
+One training example at split point t:
+    input  = older history as text only (up to max_history attempts, oldest→newest)
+             + recent history as interleaved image+caption pairs (last history_window attempts)
+             + screenshot + description of the target exercise t
     target = whether the student answered exercise t correctly (0/1)
-
-Design notes
-------------
-* __getitem__ returns RAW, lightweight data (a PIL image + text strings + label).
-  Tokenisation / image processing happens in collate_fn via the HF processor,
-  so padding is done per-batch (cheaper) and the Dataset stays model-agnostic.
-* We DO NOT precompute embeddings: a LoRA fine-tune changes the backbone's
-  forward pass, so frozen embeddings would be wrong. Raw pixel_values + input_ids
-  must be produced every step.
-* Prototyping target: HuggingFaceTB/SmolVLM-256M-Instruct (Idefics3 processor).
-  Switching to Qwen2.5-VL later only changes the model/processor IDs and the
-  chat-template call below, not the Dataset logic.
 """
 
 import json
@@ -247,35 +236,3 @@ def make_collate_fn(processor):
         return inputs
 
     return collate_fn
-
-
-# --------------------------------------------------------------------------- #
-# Usage sketch                                                                #
-# --------------------------------------------------------------------------- #
-if __name__ == "__main__":
-    from transformers import AutoProcessor
-    from torch.utils.data import DataLoader
-
-    DATASET = Path("/path/to/your/dataset")  # <-- set this
-
-    processor = AutoProcessor.from_pretrained("HuggingFaceTB/SmolVLM-256M-Instruct")
-
-    ds = KTVLMDataset(
-        sequences_path=DATASET / "sequences.parquet",
-        exercises_path=DATASET / "exercises.parquet",
-        screenshots_dir=DATASET / "data/screenshots/compressed",
-        min_history=3,
-        max_history=40,
-    )
-    print(f"{len(ds)} training examples")
-
-    loader = DataLoader(
-        ds,
-        batch_size=4,
-        shuffle=True,
-        collate_fn=make_collate_fn(processor),
-        num_workers=2,
-    )
-
-    batch = next(iter(loader))
-    print({k: (v.shape if hasattr(v, "shape") else v) for k, v in batch.items()})
