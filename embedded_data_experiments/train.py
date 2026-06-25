@@ -31,11 +31,12 @@ def load_config(path="config.yaml"):
 def main():
     cfg = load_config()
 
-    train_df = pl.read_parquet(cfg.dataset / "train.parquet")
-    val_df = pl.read_parquet(cfg.dataset / "val.parquet")
+    train_df = pl.read_parquet("../data/train_interactions_embedded.parquet")
+    val_df = pl.read_parquet("../data/val_interactions_embedded.parquet")
+    exercises_df = pl.read_parquet("../data/exercises_embedded.parquet")
 
-    train_dataset = KTDataset(train_df)
-    val_dataset = KTDataset(val_df)
+    train_dataset = KTDataset(train_df, exercises_df, max_exercises = cfg.max_exercises)
+    val_dataset   = KTDataset(val_df,   exercises_df, max_exercises = cfg.max_exercises)
     print(f"{len(train_dataset)} training examples")
     print(f"{len(val_dataset)} validation examples")
 
@@ -64,7 +65,7 @@ def main():
         max_seq_len=cfg.max_seq_len,
     ).to(cfg.device)
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.lr)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=float(cfg.lr))
     loss_fn = nn.BCEWithLogitsLoss()
 
     step = 0
@@ -77,7 +78,7 @@ def main():
             histories = histories.to(cfg.device)
             targets = targets.to(cfg.device)
             mask = mask.to(cfg.device)
-
+            
             logits = model(histories, attention_mask=mask)
             loss = loss_fn(logits, targets)
 
@@ -87,6 +88,7 @@ def main():
 
             step += 1
             pbar.set_postfix(step=step, loss=f"{loss.item():.4f}")
+            
 
             if cfg.max_steps and step >= cfg.max_steps:
                 pbar.close()
