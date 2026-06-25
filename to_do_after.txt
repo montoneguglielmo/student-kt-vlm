@@ -1,2 +1,0 @@
-1) Move the project on github
-2) Train script: add a config file
