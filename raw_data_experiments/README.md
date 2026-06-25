@@ -50,3 +50,53 @@ python train.py
 | `lr.probe` / `lr.lora` | Learning rates (probe trains fewer parameters so uses a higher LR) |
 | `lora.r`, `lora.alpha`, `lora.dropout` | LoRA rank, scaling factor, and dropout |
 | `lora.target_modules` | Which projection layers receive LoRA adapters |
+
+---
+
+## Running the Experiments
+
+### 1. Create a virtual environment
+
+From the repository root:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 2. Prepare the dataset
+
+Open `data_preparation/create_per_student_sequence.ipynb` and set `SAVE_FOLDER` at the top of the notebook to the directory where you want the sequences saved:
+
+```python
+SAVE_FOLDER = pathlib.Path("../data")   # change this to your preferred output folder
+```
+
+Run all cells. If everything goes well you should find three files in that folder:
+
+- `exercises.parquet` — exercise metadata enriched with integer IDs
+- `train_sequences.parquet` — 30 816 student sequences (80 % split)
+- `val_sequences.parquet` — 7 704 student sequences (20 % split)
+
+### 3. Update `config.yaml`
+
+Point the config to the files you just created and to the screenshot directory:
+
+```yaml
+dataset: path/to/your/save_folder      # the folder containing the three .parquet files above
+screenshots_dir: path/to/screenshots   # directory containing one sub-folder per source with .png files
+```
+
+Also choose the training regime:
+
+```yaml
+model_type: lora    # or "probe"
+```
+
+### 4. Train
+
+```bash
+cd raw_data_experiments
+python train.py
+```

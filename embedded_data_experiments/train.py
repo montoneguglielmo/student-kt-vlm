@@ -21,8 +21,6 @@ from pathlib import Path
 def load_config(path="config.yaml"):
     with open(path) as f:
         raw = yaml.safe_load(f)
-
-    raw["dataset"] = Path(raw["dataset"])
     raw["device"] = "cuda" if torch.cuda.is_available() else "cpu"
 
     return SimpleNamespace(**raw)
@@ -31,9 +29,9 @@ def load_config(path="config.yaml"):
 def main():
     cfg = load_config()
 
-    train_df = pl.read_parquet("../data/train_interactions_embedded.parquet")
-    val_df = pl.read_parquet("../data/val_interactions_embedded.parquet")
-    exercises_df = pl.read_parquet("../data/exercises_embedded.parquet")
+    train_df = pl.read_parquet("data/train_interactions_embedded.parquet")
+    val_df = pl.read_parquet("data/val_interactions_embedded.parquet")
+    exercises_df = pl.read_parquet("data/exercises_embedded.parquet")
 
     train_dataset = KTDataset(train_df, exercises_df, max_exercises = cfg.max_exercises)
     val_dataset   = KTDataset(val_df,   exercises_df, max_exercises = cfg.max_exercises)

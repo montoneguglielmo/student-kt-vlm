@@ -1,4 +1,3 @@
-dataset: "data/kt"
 max_exercises: 512
 batch_size: 32
 epochs: 20
