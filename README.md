@@ -1,6 +1,6 @@
 # Knowledge Tracing with Vision-Language Models
 
-This repository presents two experiments for building and testing **Knowledge Tracing (KT)** models — systems that predict whether a student will answer the next exercise correctly, given their history of past attempts. Both experiments are trained and evaluated on the **MIAAM dataset**, which contains on a dataset of 38,519 students with average 168 exercises per student.
+This repository presents two experiments for building and testing **Knowledge Tracing (KT)** models — systems that predict whether a student will answer the next exercise correctly, given their history of past attempts. Both experiments are trained and evaluated on the **MIAAM dataset**, comprising 38,519 students with an average of 168 exercises each.
 
 ---
 
