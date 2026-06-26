@@ -1,0 +1,126 @@
+\documentclass[10pt,twocolumn]{article}
+\usepackage[margin=1.8cm]{geometry}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{parskip}
+\setlength{\parskip}{4pt}
+
+\title{\textbf{Knowledge Tracing with Vision-Language Models}\\
+\large Two Approaches to Student Performance Prediction}
+\author{Guglielmo Montone}
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\section*{Problem Statement}
+
+Knowledge Tracing (KT) is the task of predicting whether a student will answer the next exercise
+correctly, given their history of past attempts. This work explores two experimental pipelines
+trained and evaluated on the \textbf{MIAAM dataset}, which contains 38,519 students with an
+average of 168 exercises each. Both pipelines leverage \textbf{SmolVLM-256M-Instruct} as the
+multimodal backbone and share a common data representation: exercises are described by text
+and a screenshot, while attempts are described by text (answer given, duration, timestamp,
+and correctness label).
+
+The first experiment is intended as a \textbf{baseline}: feeding raw multimodal content directly
+to a VLM is the most straightforward approach to the problem, and it helps characterise the
+limitations of this strategy on the MIAAM dataset. The second experiment proposes an alternative
+design in which the VLM is used to encode each exercise and each attempt \emph{independently}
+into a fixed-size vector; these representations are then consumed by a Transformer architecture,
+which can reason over much longer student histories.
+
+\section*{Experiment 1 --- Raw Multimodal Input}
+
+The first approach feeds \emph{raw} multimodal content directly to the VLM at training time. 
+For a student with history $t$, the model receives a concatenated sequence of exercise 
+screenshots and text, together with text descriptions of past attempts.
+
+\textbf{Objective.} Establish a baseline by fine-tuning a VLM either end-to-end or 
+partially, directly on the raw multimodal input.
+
+Two training regimes are supported:
+\begin{itemize}
+  \item \textbf{Probe} — the VLM backbone is fully frozen; only a linear classification head appended
+   to the pooled hidden state is trained. This is fast and parameter-efficient.
+  \item \textbf{LoRA fine-tuning} — lightweight LoRA adapters are injected into the attention 
+  and MLP projections of the backbone and trained end-to-end alongside the head, at a lower 
+  learning rate than the probe.
+\end{itemize}
+
+\textbf{Key limitations.} The 256M-parameter VLM has a small context window, which restricts each
+input to only 4--5 past attempts regardless of the student's actual history length. Since students
+average 168 exercises, the vast majority of each student's learning trajectory is discarded at
+every training step, inherently limiting what the model can infer about long-term knowledge state.
+
+A second limitation is \textbf{training speed}. Even in probe mode, where the backbone is frozen and
+no gradients flow through it, a full VLM forward pass must run on every batch to produce the hidden
+states consumed by the classification head. Processing raw screenshots through the vision encoder at
+every step is expensive, and this cost is paid repeatedly across all epochs. By contrast, Experiment~2
+pays the VLM inference cost only once during preprocessing: embeddings are cached to disk and the
+training loop never touches the VLM again, making each training step orders of magnitude cheaper.
+
+\section*{Experiment 2 --- Pre-computed Embeddings}
+
+The second approach decouples the VLM from the training loop entirely. Each exercise and each
+attempt is encoded \emph{once} by a frozen VLM into a 576-dimensional embedding vector. A
+lightweight Transformer then learns to reason over sequences of these cached embeddings.
+
+\textbf{Objectives.} (1) Validate the advantage of pre-computing exercise and attempt embeddings 
+from a computational perspective, expecting faster training that can run on smaller GPUs. (2) Validate 
+the advantage in terms of prediction performances of feeding the model a longer sequence of 
+student history.
+
+\textbf{Input sequence.} For a student who has completed $t$ exercises, the model 
+receives an interleaved sequence of $2t+1$ vectors:
+\[
+[\,e_0,\,a_0,\,e_1,\,a_1,\,\ldots,\,e_{t-1},\,a_{t-1},\,e_t\,]
+\]
+where $e_i = \mathrm{VLM}(\text{exercise}_i)$ and $a_i = \mathrm{VLM}(\text{attempt}_i)$. The final 
+token $e_t$ has no corresponding attempt yet; the prediction head reads the Transformer's hidden 
+state at that position and produces a scalar logit for binary classification.
+
+\textbf{Architecture.} The \texttt{KTTransformer} consists of (i) a linear projection from the 576-d 
+input space to the model's internal dimension $d_\text{model}$, (ii) learnable positional 
+embeddings, (iii) a stack of standard Transformer encoder layers (bidirectional attention, no causal mask), 
+and (iv) a two-layer MLP head. Sequences are zero-padded to the batch maximum and a boolean attention
+mask prevents the model from attending to padding tokens.
+
+\textbf{Key advantage.} Because embeddings are pre-computed and compact, the Transformer can process 
+histories of up to \textbf{512 past exercises}, covering most students in full rather than truncating 
+their history.
+
+\section*{Results}
+
+No complete results was found for Experiment~1. A single training epoch on the available GPU takes 3--4 
+hours due to the cost of running the full VLM forward pass at every step, making a full training run 
+impractical within the available time budget.
+
+The embedded approach reaches \textbf{83\% validation accuracy} after a short training session, 
+with no hyperparameter tuning. This is a strong baseline given the simplicity of the 
+encoder (256M parameters) and the absence of any hand-crafted features.
+
+\section*{Conclusion}
+
+Experiment 1 lets the VLM jointly encode each exercise and reason over the full history 
+end-to-end, so it can interpret an exercise in light of what just happened (e.g. right after 
+a failure vs. a success), at the cost of higher capacity demands and the risk of entangling 
+exercise content with spurious features of any one student's trajectory. Experiment 2 factorizes 
+the problem — a frozen encoder produces consistent, context-free exercise embeddings that a 
+dedicated downstream transformer contextualizes over the sequence — which is more parameter-efficient
+and avoids baking history-specific noise into the content representation, but loses the ability 
+to fuse context at encoding time if the embedding discards the relevant detail.
+
+Regarding Experiment~1, it would still be interesting to run a complete training on this
+setup, potentially using a more powerful model with a larger context window to better
+capture student history.
+
+Experiment~2 appears very promising, especially when one of the main desiderata of the
+project is to operate with small VLMs. It offers clear advantages in training speed and
+in the ability to feed the model a much longer student history. The natural next step
+here is to try a slightly larger backbone to produce richer embeddings, while retaining
+the decoupled, computationally efficient design.
+
+\end{document}
