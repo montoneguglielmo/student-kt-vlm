@@ -131,8 +131,7 @@ In this project almost all the code has been written in the previous way.
 To be more accurate this is how I used the AI assistant.
 
 In the notebooks for data preparation I did not use much the AI assistant except for writing small chunks of code (around 20 lines).
-Once the data preprocessing was over, I started by asking the assistant to generate a PyTorch dataset class that could load data from the dataframe I created.
-\vspace{3pt}
+Once the data preprocessing was over, I started by asking the assistant to generate a PyTorch dataset class that could load data from the dataframe I created.\\
 BUILD A PYTORCH DATASET (raw\_data\_experiments)\\
 \begin{itshape}I was giving to the assistant the header and first rows of the sequence of attempts and
 the exercises created in the notebook (create\_per\_student\_sequence.ipynb)
@@ -149,8 +148,7 @@ The target should be the success/failure of exercise t+1.
 Target should be used as input to a very small Hugging Face VLM (SmolVLM-256M-Instruct)\end{itshape}
 
 After this I had a few iterations to ask to have parameters to cut the student history and I reviewed the outcome of the code (see notebook tests/data\_processing\_test.py)
-I did something similar for the second experiment.
-\vspace{3pt}
+I did something similar for the second experiment.\\
 BUILD A PYTORCH DATASET (embedded\_experiments) \\
 \textit{I would like some help in writing a pytorch dataset class.
 The class will receive as input a pandas file with 2 columns: 1) Student history 2) Student scores
@@ -159,8 +157,7 @@ The scores are true or false: scores = [score\_1, ..., score\_n]
 I would like the get\_item to randomly select a point in history (t), return all the exercises and the attempts done before and the score at time t.
 history = [exercise\_1, attempt\_1, ..., exercise\_t] score = score\_t}
 
-Going back to the experiment raw\_data\_experiment, after I had a good working dataset class, I asked the AI assistant to build a model
-\vspace{3pt}
+Going back to the experiment raw\_data\_experiment, after I had a good working dataset class, I asked the AI assistant to build a model\\
 BUILD A MODEL:\\
 \begin{itshape}Can you write me a PyTorch model that adds to the last layer of the VLM HuggingFaceTB/SmolVLM-256M-Instruct a linear layer?
 I would like you to use the transformer class to load the vlm.
@@ -169,8 +166,7 @@ The linear layer should receive as input the pooling of the last layer of the VL
 After validating that the code was respecting my requirements, I noticed that the VLM was not frozen when the model class was initialized,
 so the code was not setting required\_grad = False for the params of the VLM. So I asked the assistant to fix this.
 
-After that I gave the AI assistant the model.py and asked to modify the code so that I could fine-tune the entire VLM with LoRA.
-\vspace{3pt}
+After that I gave the AI assistant the model.py and asked to modify the code so that I could fine-tune the entire VLM with LoRA.\\
 MODIFY THE MODEL TO USE LORA\\
 \textit{This is the code I am using for training a last layer on top of a VLM.
 I would like to test another architecture where the VLM is fine-tuned using LoRA.}
