@@ -131,16 +131,16 @@ In this project almost all the code has been written in the previous way.
 To be more accurate this is how I used the AI assistant.
 
 In the notebooks for data preparation I did not use much the AI assistant except for writing small chunks of code (around 20 lines).
-Once the data preprocessing was over, I started by asking the assistant to generate a PyTorch dataset class that could load data from the dataframe I created.\\
-BUILD A PYTORCH DATASET (raw\_data\_experiments)\\
-\begin{itshape}I was giving to the assistant the header and first rows of the sequence of attempts and
-the exercises created in the notebook (create\_per\_student\_sequence.ipynb)
+Once the data preprocessing was over, I started by asking the assistant to generate a PyTorch dataset class that could load data from the dataframe I created.
+I was giving to the assistant the header and first rows of the sequence of attempts and the exercises created in the notebook (create\_per\_student\_sequence.ipynb).
 I was describing the task to the assistant in this way:
-Can you write a PyTorch Dataset class for knowledge tracing that produces VLM-ready inputs?
-sequences.parquet, per-student chronological attempt history, each attempt containing exercise\_id, data\_correct,...
-exercises.parquet,  per-exercise metadata.
-A screenshot PNG per exercise at DATASET/data/screenshots/compressed/exercise-id.png
 
+\medskip\noindent\textbf{Build a PyTorch Dataset (raw\_data\_experiments)}
+\begin{itshape}
+Can you write a PyTorch Dataset class for knowledge tracing that produces VLM-ready inputs?\\
+sequences.parquet: per-student chronological attempt history, each attempt containing exercise\_id, data\_correct,...\\
+exercises.parquet:  per-exercise metadata.\\
+A screenshot PNG per exercise at DATASET/data/screenshots/compressed/exercise-id.png.
 To obtain a training you should:
 Pick a random split point t in a student's history.
 The input should be the history up to time t plus the text description and screenshot of exercise t+1.
@@ -148,8 +148,9 @@ The target should be the success/failure of exercise t+1.
 Target should be used as input to a very small Hugging Face VLM (SmolVLM-256M-Instruct)\end{itshape}
 
 After this I had a few iterations to ask to have parameters to cut the student history and I reviewed the outcome of the code (see notebook tests/data\_processing\_test.py)
-I did something similar for the second experiment.\\
-BUILD A PYTORCH DATASET (embedded\_experiments) \\
+I did something similar for the second experiment.
+
+\medskip\noindent\textbf{Build a PyTorch Dataset (embedded\_data\_experiments)}
 \textit{I would like some help in writing a pytorch dataset class.
 The class will receive as input a pandas file with 2 columns: 1) Student history 2) Student scores
 The student history column contains embeddings of the exercises performed and info around the attempt. The exercises and the attempts descriptions are represented in vectors of the same size D, in a list: history  = [exercise\_1, attempt\_1, ..., exercise\_n, attempt\_n]
@@ -157,22 +158,33 @@ The scores are true or false: scores = [score\_1, ..., score\_n]
 I would like the get\_item to randomly select a point in history (t), return all the exercises and the attempts done before and the score at time t.
 history = [exercise\_1, attempt\_1, ..., exercise\_t] score = score\_t}
 
-Going back to the experiment raw\_data\_experiment, after I had a good working dataset class, I asked the AI assistant to build a model\\
-BUILD A MODEL:\\
+Going back to the experiments in the raw\_data\_experiments folder, after I had a good working dataset class, I asked the AI assistant to build a model.
+
+\medskip\noindent\textbf{Build a Model}
 \begin{itshape}Can you write me a PyTorch model that adds to the last layer of the VLM HuggingFaceTB/SmolVLM-256M-Instruct a linear layer?
-I would like you to use the transformer class to load the vlm.
+I would like you to use the transformer class to load the VLM.
 The linear layer should receive as input the pooling of the last layer of the VLM, the pooling should return the embedding of the last token.\end{itshape}
 
 After validating that the code was respecting my requirements, I noticed that the VLM was not frozen when the model class was initialized,
-so the code was not setting required\_grad = False for the params of the VLM. So I asked the assistant to fix this.
+so the code was not setting required\_grad = False for the params of the VLM. So I asked the assistant to fix this. After few iterations I obtained the class
+KTProbe in raw\_data\_expriments/models.py
 
-After that I gave the AI assistant the model.py and asked to modify the code so that I could fine-tune the entire VLM with LoRA.\\
-MODIFY THE MODEL TO USE LORA\\
+After that I gave the AI assistant the KTProbe class and asked to modify the code so that I could fine-tune the entire VLM with LoRA.
+I obtained in this way the class KTLoRA.
+
+\medskip\noindent\textbf{Modify the Model to Use LoRA}
 \textit{This is the code I am using for training a last layer on top of a VLM.
-I would like to test another architecture where the VLM is fine-tuned using LoRA.}
+I would like to test another architecture where the entire VLM is fine-tuned using LoRA.}
 
 Finally I asked to write a simple training script using only a training and validation loop, without saving the model params.
 I specified that the training script should use the classes defined before for loading data and for the model architecture.
 I then asked to: add a progress bar showing the training status, and add a config file using YAML.
+
+For the architecture in the second experiment (embedded\_data\_experiments) I was asking the AI assistant:
+
+\medskip\noindent\textbf{Write a smile transformer class}
+\textit{Write a standard transformer architecture. The input is a padded sequence of per-student history 
+embeddings of shape BxTxD, interleaved exercise and interaction embedding vectors of dimension D, together with a BxT boolean attention 
+mask marking real tokens versus padding. The output is a B tensor of logits giving, per student, the predicted probability of solving the next, target, exercise.}
 
 \end{document}
