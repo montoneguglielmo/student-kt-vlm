@@ -122,21 +122,20 @@ here is to try a slightly larger backbone to produce richer embeddings, while re
 the decoupled, computationally efficient design.
 
 \section*{Use of GenAI}
-I usually write code using VScode with Claude code plugin installed as AI code assistant.
-To develop this project I have used the AI assitant as I would more or less od all the time.
-I would ask the AI assistnat to write specific chuncks of code (usually 100-200 lines of code).
-I would double-check /test and ask to rewrite some pieces. I would iterate in this way until the code is doing what I wish, to then pass to 
-write new chuncks of code.
+I usually write code using VSCode with the Claude Code plugin installed as an AI code assistant.
+To develop this project I have used the AI assistant as I would more or less all the time.
+I would ask the AI assistant to write specific chunks of code (usually 100-200 lines of code).
+I would double-check and test and ask to rewrite some pieces. I would iterate in this way until the code is doing what I wish, to then move on to writing new chunks of code.
 
-In this project almost all the code has been writen in the previous way.
+In this project almost all the code has been written in the previous way.
 To be more accurate this is how I used the AI assistant.
 
-In the notebooks for data preparation I did not use much the AI assistant expet for writing small chuck of code (20 lines).
-Once the data preprocessing was over, I have started by asking the assistant to generate a pytorch dataset class that could load data from the dataframe I created.
-
-BUILD A pytorch dataset (raw\_data\_experiments)
-\begin{itshape}I was giving to the assistanrt the haeder and first rows of the sequence of attempts and
-the exercises create in the notebook (create\_per\_student\_sequence.ipynb)
+In the notebooks for data preparation I did not use much the AI assistant except for writing small chunks of code (around 20 lines).
+Once the data preprocessing was over, I started by asking the assistant to generate a PyTorch dataset class that could load data from the dataframe I created.
+\\
+BUILD A PYTORCH DATASET (raw\_data\_experiments)
+\begin{itshape}I was giving to the assistant the header and first rows of the sequence of attempts and
+the exercises created in the notebook (create\_per\_student\_sequence.ipynb)
 I was describing the task to the assistant in this way:
 Can you write a PyTorch Dataset class for knowledge tracing that produces VLM-ready inputs?
 sequences.parquet, per-student chronological attempt history, each attempt containing exercise\_id, data\_correct,...
@@ -149,35 +148,35 @@ The input should be the history up to time t plus the text description and scree
 The target should be the success/failure of exercise t+1.
 Target should be used as input to a very small Hugging Face VLM (SmolVLM-256M-Instruct)\end{itshape}
 
-After this I had a few iteration to ask to have parameters to cut the student history and I reviewed the outcome of the code (see notebook tests/data\_processing\_test.py)
+After this I had a few iterations to ask to have parameters to cut the student history and I reviewed the outcome of the code (see notebook tests/data\_processing\_test.py)
 I did something similar for the second experiment.
-
-BUILD A pytorch dataset (embedded\_experiments)
+\\
+BUILD A PYTORCH DATASET (embedded\_experiments)
 \textit{I would like some help in writing a pytorch dataset class.
 The class will receive as input a pandas file with 2 columns: 1) Student history 2) Student scores
-The student history columns contains embedding of the exercises perfgomed and info around the attempt. The exercises and the attempts descriptions are represented in vetors of the same size D, in a list: history  = [exercise\_1, attempt\_1, ..., exercise\_n, attempt\_n]
+The student history column contains embeddings of the exercises performed and info around the attempt. The exercises and the attempts descriptions are represented in vectors of the same size D, in a list: history  = [exercise\_1, attempt\_1, ..., exercise\_n, attempt\_n]
 The scores are true or false: scores = [score\_1, ..., score\_n]
-I would like the get\_item to randomly select a point in history (t), return all the exercise and the attampt done before and the score of the time t.
+I would like the get\_item to randomly select a point in history (t), return all the exercises and the attempts done before and the score at time t.
 history = [exercise\_1, attempt\_1, ..., exercise\_t] score = score\_t}
 
-Going back to the experiment raw\_data\_experiment, after I had a good working dataset class, I would ask the AI assistant to build a model
-
+Going back to the experiment raw\_data\_experiment, after I had a good working dataset class, I asked the AI assistant to build a model
+\\
 BUILD A MODEL:
-\begin{itshape}Can you write me a pytorch model that add to the last layer of the VLM HuggingFaceTB/SmolVLM-256M-Instruct a liner layer?
+\begin{itshape}Can you write me a PyTorch model that adds to the last layer of the VLM HuggingFaceTB/SmolVLM-256M-Instruct a linear layer?
 I would like you to use the transformer class to load the vlm.
 The linear layer should receive as input the pooling of the last layer of the VLM, the pooling should return the embedding of the last token.\end{itshape}
 
-After I validated that the code was repspeciting what I have asked. In this case I notice that the VLM was not frozen when the model class was initialize,
-so the code was not setting required\_grad = False for the params of the VLM. So I asked the assistant to do so.
+After validating that the code was respecting my requirements, I noticed that the VLM was not frozen when the model class was initialized,
+so the code was not setting required\_grad = False for the params of the VLM. So I asked the assistant to fix this.
 
-After that I was giving to the AI assistant the model.py and ask to modify the code so that I could tune the entire VLM with LORA.
+After that I gave the AI assistant the model.py and asked to modify the code so that I could fine-tune the entire VLM with LoRA.
 
 MODIFY THE MODEL TO USE LORA
-\textit{This is a code I am using for training a last layer on top of an VLM.
-I would like to test another architecture where the VLM is fine-tuned using LORA}
+\textit{This is the code I am using for training a last layer on top of a VLM.
+I would like to test another architecture where the VLM is fine-tuned using LoRA.}
 
-Finally I would ask to write a simple training script using only a training and validation, without saving the model params.
-I specified that the training script should use the class defined before for loading data and for model architecture.
-I would afterward ask to: add a progress bar to the status of the training, add a config file using yaml.
+Finally I asked to write a simple training script using only a training and validation loop, without saving the model params.
+I specified that the training script should use the classes defined before for loading data and for the model architecture.
+I then asked to: add a progress bar showing the training status, and add a config file using YAML.
 
 \end{document}
