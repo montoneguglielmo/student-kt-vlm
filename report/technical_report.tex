@@ -125,10 +125,15 @@ the decoupled, computationally efficient design.
 I usually write code using VSCode with the Claude Code plugin installed as an AI code assistant.
 To develop this project I have used the AI assistant as I would more or less all the time.
 I would ask the AI assistant to write specific chunks of code (usually 100-200 lines of code).
-I would double-check and test and ask to rewrite some pieces. I would iterate in this way until the code is doing what I wish, to then move on to writing new chunks of code.
+I would double-check and test and ask to rewrite some pieces. 
+I would iterate in this way until the code is doing what I wish, to then move on to writing new chunks of code.
+I also used the AI assistant to help debugging issues, asking questions like: can you explain me why I have this..., or 
+to know what are the common practice in the community when it comes to specific choice of params for specific architectures.
+For this project I did not use the AI assistant to discuss how meaningful/valid were the ideas behind the experiments or how interesting 
+they could be for the scientific community. In other porjects, in the past, I did this.
 
-In this project almost all the code has been written in the previous way.
-To be more accurate this is how I used the AI assistant.
+In this project almost all the code has been written in the way described above.
+Here down you can see a very detailed description of the use of the AI assistant for this project.
 
 In the notebooks for data preparation I did not use much the AI assistant except for writing small chunks of code (around 20 lines).
 Once the data preprocessing was over, I started by asking the assistant to generate a PyTorch dataset class that could load data from the dataframe I created.
@@ -176,7 +181,11 @@ I obtained in this way the class KTLoRA.
 \textit{This is the code I am using for training a last layer on top of a VLM.
 I would like to test another architecture where the entire VLM is fine-tuned using LoRA.}
 
-Finally I asked to write a simple training script using only a training and validation loop, without saving the model params.
+After I obtained the code for Lora, I was spending some time chatting with the assistant to better understand the use of the params r
+and lora\_alpha, I was tyring to better understrand where in the computation such params are used and what are the typical values
+the community uses for them.
+
+Finally I asked the AI assistant to write a standart training script using only a training and validation loop, without saving the model params.
 I specified that the training script should use the classes defined before for loading data and for the model architecture.
 I then asked to: add a progress bar showing the training status, and add a config file using YAML.
 
