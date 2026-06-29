@@ -134,42 +134,41 @@ To be more accurate this is how I used the AI assistant.
 In the notebooks for data preparation I did not use much the AI assistant expet for writing small chuck of code (20 lines).
 Once the data preprocessing was over, I have started by asking the assistant to generate a pytorch dataset class that could load data from the dataframe I created.
 
-BUILD A pytorch dataset (raw_data_experiments)
-\textit{I was giving to the assistanrt the haeder and first rows of the sequence of attempts and the exercises create in the notebook (create_per_student_sequence.ipynb)
+BUILD A pytorch dataset (raw\_data\_experiments)
+\begin{itshape}I was giving to the assistanrt the haeder and first rows of the sequence of attempts and
+the exercises create in the notebook (create\_per\_student\_sequence.ipynb)
 I was describing the task to the assistant in this way:
 Can you write a PyTorch Dataset class for knowledge tracing that produces VLM-ready inputs?
-sequences.parquet — per-student chronological attempt history, each attempt containing exercise_id, data_correct,...
-exercises.parquet — per-exercise metadata. 
-A screenshot PNG per exercise at DATASET/data/screenshots/compressed/<source>/<exercise_id>.png
+sequences.parquet, per-student chronological attempt history, each attempt containing exercise\_id, data\_correct,...
+exercises.parquet,  per-exercise metadata.
+A screenshot PNG per exercise at DATASET/data/screenshots/compressed/exercise-id.png
 
 To obtain a training you should:
 Pick a random split point t in a student's history.
 The input should be the history up to time t plus the text description and screenshot of exercise t+1.
 The target should be the success/failure of exercise t+1.
-Target should be used as input to a very small Hugging Face VLM (SmolVLM-256M-Instruct)}
+Target should be used as input to a very small Hugging Face VLM (SmolVLM-256M-Instruct)\end{itshape}
 
-After this I had a few iteration to ask to have parameters to cut the student history and I reviewed the outcome of the code (see notebook tests/data_processing_test.py)
+After this I had a few iteration to ask to have parameters to cut the student history and I reviewed the outcome of the code (see notebook tests/data\_processing\_test.py)
 I did something similar for the second experiment.
 
-BUILD A pytorch dataset (embedded_experiments)
+BUILD A pytorch dataset (embedded\_experiments)
 \textit{I would like some help in writing a pytorch dataset class.
 The class will receive as input a pandas file with 2 columns: 1) Student history 2) Student scores
-The student history columns contains embedding of the exercises perfgomed and info around the attempt. The exercises and the attempts descriptions are represented in vetors of the same size D, in a list: history  = [exercise_1, attempt_1, ..., exercise_n, attempt_n]
-The scores are true or false: scores = [score_1, ..., score_n]
-I would like the get_item to randomly select a point in history (t), return all the exercise and the attampt done before and the score of the time t.
-history = [exercise_1, attempt_1, ..., exercise_t] score = score_t}
+The student history columns contains embedding of the exercises perfgomed and info around the attempt. The exercises and the attempts descriptions are represented in vetors of the same size D, in a list: history  = [exercise\_1, attempt\_1, ..., exercise\_n, attempt\_n]
+The scores are true or false: scores = [score\_1, ..., score\_n]
+I would like the get\_item to randomly select a point in history (t), return all the exercise and the attampt done before and the score of the time t.
+history = [exercise\_1, attempt\_1, ..., exercise\_t] score = score\_t}
 
-Going back to the experiment raw_data_experiment, after I had a good working dataset class, I would ask the AI assistant to build a model
+Going back to the experiment raw\_data\_experiment, after I had a good working dataset class, I would ask the AI assistant to build a model
 
 BUILD A MODEL:
-\textit{
-Can you write me a pytorch model that add to the last layer of the VLM HuggingFaceTB/SmolVLM-256M-Instruct a liner layer?
+\begin{itshape}Can you write me a pytorch model that add to the last layer of the VLM HuggingFaceTB/SmolVLM-256M-Instruct a liner layer?
 I would like you to use the transformer class to load the vlm.
-The linear layer should receive as input the pooling of the last layer of the VLM, the pooling should return the embedding of the last token.
-}
+The linear layer should receive as input the pooling of the last layer of the VLM, the pooling should return the embedding of the last token.\end{itshape}
 
 After I validated that the code was repspeciting what I have asked. In this case I notice that the VLM was not frozen when the model class was initialize,
-so the code was not setting required_grad = False for the params of the VLM. So I asked the assistant to do so.
+so the code was not setting required\_grad = False for the params of the VLM. So I asked the assistant to do so.
 
 After that I was giving to the AI assistant the model.py and ask to modify the code so that I could tune the entire VLM with LORA.
 
