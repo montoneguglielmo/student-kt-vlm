@@ -39,7 +39,7 @@ def main():
     
     cfg = load_config()
     
-    processor = Idefics3Processor.from_pretrained(cfg.model_id)
+    processor = Idefics3Processor.from_pretrained(cfg.model_id, size={"longest_edge": 512})
 
     train_dataset = KTVLMDataset(
         sequences_path=cfg.dataset / "train_sequences.parquet",
@@ -109,6 +109,7 @@ def main():
         # Validation pass at end of epoch
         model.eval()
         val_loss, val_correct, val_total = 0.0, 0, 0
+        step_val = 0
         with torch.no_grad():
             for batch in tqdm(val_loader, desc=f"Epoch {epoch} val", unit="batch"):
                 labels = batch.pop("labels").to(cfg.device, dtype=torch.bfloat16)
@@ -119,6 +120,11 @@ def main():
                 preds = (torch.sigmoid(logits) > 0.5).to(torch.bfloat16)
                 val_correct += (preds == labels).sum().item()
                 val_total += labels.size(0)
+                
+                if cfg.max_steps and step_val >= cfg.max_steps:
+                    print("reached MAX_STEPS, stopping")
+                    break
+                step_val +=1
 
         val_loss /= val_total
         val_acc = val_correct / val_total
