@@ -96,6 +96,8 @@ def main():
         # Validation
         model.eval()
         val_loss, val_correct, val_total = 0.0, 0, 0
+        correct_1, total_1 = 0, 0  # Accuracy {1}: student answered correctly
+        correct_0, total_0 = 0, 0  # Accuracy {0}: student answered incorrectly
         with torch.no_grad():
             for histories, targets, mask in tqdm(val_loader, desc=f"Epoch {epoch} val", unit="batch"):
                 histories = histories.to(cfg.device)
@@ -108,9 +110,20 @@ def main():
                 val_correct += (preds == targets).sum().item()
                 val_total += targets.size(0)
 
+                # Per-class accuracy (Accuracy {1} and Accuracy {0})
+                pos_mask = targets == 1
+                neg_mask = targets == 0
+                correct_1 += (preds[pos_mask] == targets[pos_mask]).sum().item()
+                total_1 += pos_mask.sum().item()
+                correct_0 += (preds[neg_mask] == targets[neg_mask]).sum().item()
+                total_0 += neg_mask.sum().item()
+
         val_loss /= val_total
         val_acc = val_correct / val_total
-        print(f"epoch {epoch}  val loss {val_loss:.4f}  val acc {val_acc:.4f}")
+        val_acc_1 = correct_1 / total_1 if total_1 > 0 else float("nan")
+        val_acc_0 = correct_0 / total_0 if total_0 > 0 else float("nan")
+        print(f"epoch {epoch}  val loss {val_loss:.4f}  val acc {val_acc:.4f}  "
+            f"acc{{1}} {val_acc_1:.4f}  acc{{0}} {val_acc_0:.4f}")
 
         if cfg.max_steps and step >= cfg.max_steps:
             return
